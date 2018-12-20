@@ -1,0 +1,92 @@
+version: '3'
+
+services:
+  # -------------------------------------------------------------------------------------
+  # Basics
+  # -------------------------------------------------------------------------------------
+  mqtt:
+    image: eclipse-mosquitto
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+  admin:
+    image: dersimn/mqtt-admin
+    ports:
+      - "8001:80"
+    environment:
+      - MQTT_HOST=mqtt:9001
+  # -------------------------------------------------------------------------------------
+  # UI
+  # -------------------------------------------------------------------------------------
+  webui:
+    image: dersimn/mqtt-smarthome-webui
+    ports:
+      - "8000:80"
+    environment:
+      - MQTT_HOST=mqtt:9001
+    volumes:
+      - ./webui.json:/www/data.json:ro
+  # -------------------------------------------------------------------------------------
+  # Logics
+  # -------------------------------------------------------------------------------------
+  logic:
+    image: dersimn/mqtt-scripts
+    restart: always
+    environment:
+      - TZ=Europe/Berlin
+      - MQTTSCRIPTS_URL=mqtt://mqtt
+      - MQTTSCRIPTS_DIR=/scripts
+    volumes:
+      - ./scripts:/scripts:ro # Remove simulation_*.js scripts inside this folder when testing with real hardware
+  astro:
+    image: dersimn/astro4mqtt
+    restart: always
+    environment:
+      ASTRO4MQTT_MQTT_URL: mqtt://mqtt
+      ASTRO4MQTT_LATITUDE: 51.5
+      ASTRO4MQTT_LONGITUDE: -0.1
+  # -------------------------------------------------------------------------------------
+  # Database
+  # -------------------------------------------------------------------------------------
+  influxdb:
+    image: influxdb
+    environment:
+      - INFLUXDB_DB=mqtt
+  mqtt2influx:
+    image: dersimn/mqtt2influx
+    environment:
+      - MQTT2INFLUX_MQTT_URL=mqtt://mqtt
+      - MQTT2INFLUX_INFLUX_HOST=influxdb
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "8002:3000"
+    environment:
+      - GF_SERVER_ROOT_URL=http://localhost:8002
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_DEFAULT_THEME=light
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+  # -------------------------------------------------------------------------------------
+  # Bridges
+  # -------------------------------------------------------------------------------------
+  # hue:
+  #   image: dersimn/simplehue2mqtt
+  #   environment:
+  #     - SIMPLEHUE2MQTT_MQTT_URL=mqtt://mqtt
+  #     - SIMPLEHUE2MQTT_BRIDGE_ADDRESS=10.1.1.52
+  #     - SIMPLEHUE2MQTT_BRIDGE_USERNAME=newdeveloper # Get username by calling: docker run --rm dersimn/netutils curl -X "POST" "http://10.1.1.52/api" -d $'{"devicetype": "simplehue2mqtt"}'
+  # ------------------------------------------------------------------------------------- 
+  # hm_rfd: # For Homematic RFD ("classic") devices only, no Homematic IP support
+  #   image: dersimn/simplehomematicrfd2mqtt
+  #   ports:
+  #     - "2126:2126"
+  #   environment:
+  #     - SIMPLEHOMEMATICRFD2MQTT_CCU_ADDRESS=10.1.1.112
+  #     - SIMPLEHOMEMATICRFD2MQTT_INIT_ADDRESS=10.1.1.50
+  #     - SIMPLEHOMEMATICRFD2MQTT_MQTT_URL=mqtt://mqtt
+  #     - SIMPLEHOMEMATICRFD2MQTT_FILTER_BLACKLIST="^PARTY_"
+  # -------------------------------------------------------------------------------------
+
