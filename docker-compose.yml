@@ -46,6 +46,12 @@ services:
       ASTRO4MQTT_MQTT_URL: mqtt://mqtt
       ASTRO4MQTT_LATITUDE: 51.5
       ASTRO4MQTT_LONGITUDE: -0.1
+  # pushover:
+  #   image: dersimn/mqtt2pushover
+  #   environment:
+  #     - MQTT2PUSHOVER_MQTT_URL=mqtt://mqtt
+  #     - MQTT2PUSHOVER_PUSHOVER_USER=XXXXXXXX
+  #     - MQTT2PUSHOVER_PUSHOVER_TOKEN=XXXXXXXX
   # -------------------------------------------------------------------------------------
   # Database
   # -------------------------------------------------------------------------------------
@@ -77,16 +83,48 @@ services:
   #   environment:
   #     - SIMPLEHUE2MQTT_MQTT_URL=mqtt://mqtt
   #     - SIMPLEHUE2MQTT_BRIDGE_ADDRESS=10.1.1.52
-  #     - SIMPLEHUE2MQTT_BRIDGE_USERNAME=newdeveloper # Get username by calling: docker run --rm dersimn/netutils curl -X "POST" "http://10.1.1.52/api" -d $'{"devicetype": "simplehue2mqtt"}'
+  #     # Get username by pressing the link-button and call:
+  #     #   curl -X "POST" "http://10.1.1.52/api" -d $'{"devicetype": "simplehue2mqtt"}'
+  #     # or
+  #     #   docker run --rm dersimn/netutils curl -X "POST" "http://10.1.1.52/api" -d $'{"devicetype": "simplehue2mqtt"}'
+  #     - SIMPLEHUE2MQTT_BRIDGE_USERNAME=XXXXXXX
+  # -------------------------------------------------------------------------------------
+  # chromecast:
+  #   image: dersimn/chromecast-mqtt-smarthome-connector
+  #   network_mode: "host"
+  #   environment:
+  #     - MQTT_HOST=mqtt
   # ------------------------------------------------------------------------------------- 
   # hm: # For Homematic ("classic") devices only, no Homematic IP support
   #   image: dersimn/simplehmrfd2mqtt
   #   ports:
   #     - "2126:2126"
   #   environment:
-  #     - SIMPLEHOMEMATICRFD2MQTT_CCU_ADDRESS=10.1.1.112
-  #     - SIMPLEHOMEMATICRFD2MQTT_INIT_ADDRESS=10.1.1.50
-  #     - SIMPLEHOMEMATICRFD2MQTT_MQTT_URL=mqtt://mqtt
-  #     - SIMPLEHOMEMATICRFD2MQTT_FILTER_BLACKLIST="^PARTY_"
+  #     - SIMPLEHMRFD2MQTT_CCU_ADDRESS=10.1.1.112
+  #     - SIMPLEHMRFD2MQTT_INIT_ADDRESS=10.1.1.50
+  #     - SIMPLEHMRFD2MQTT_MQTT_URL=mqtt://mqtt
+  #     - SIMPLEHMRFD2MQTT_FILTER_BLACKLIST="^PARTY_"
+  # -------------------------------------------------------------------------------------
+  # hmip: # For Homematic IP, still kinda alpha-stage level
+  #   image: dersimn/simplehmip2mqtt
+  #   ports:
+  #     - "3126:3126"
+  #   environment:
+  #     - SIMPLEHMIP2MQTT_CCU_ADDRESS=10.1.1.112
+  #     - SIMPLEHMIP2MQTT_INIT_ADDRESS=10.1.1.50
+  #     - SIMPLEHMIP2MQTT_MQTT_URL=mqtt://mqtt
+  #     - SIMPLEHMIP2MQTT_FILTER_WHITELIST="STATE PRESS_SHORT PRESS_LONG"
+  # -------------------------------------------------------------------------------------
+  # hs100:
+  #   image: dersimn/hs100tomqtt
+  #   network_mode: "host"
+  #   environment:
+  #     - HS100TOMQTT_MQTT_URL=mqtt://mqtt
+  # -------------------------------------------------------------------------------------
+  # homepilot:
+  #   image: dersimn/homepilot2mqtt
+  #   environment:
+  #     - HOMEPILOT2MQTT_MQTT_URL=mqtt://mqtt
+  #     - HOMEPILOT2MQTT_BRIDGE_ADDRESS=10.0.0.22
   # -------------------------------------------------------------------------------------
 
