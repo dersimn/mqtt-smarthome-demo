@@ -79,8 +79,8 @@ services:
   #     - SIMPLEHUE2MQTT_BRIDGE_ADDRESS=10.1.1.52
   #     - SIMPLEHUE2MQTT_BRIDGE_USERNAME=newdeveloper # Get username by calling: docker run --rm dersimn/netutils curl -X "POST" "http://10.1.1.52/api" -d $'{"devicetype": "simplehue2mqtt"}'
   # ------------------------------------------------------------------------------------- 
-  # hm_rfd: # For Homematic RFD ("classic") devices only, no Homematic IP support
-  #   image: dersimn/simplehomematicrfd2mqtt
+  # hm: # For Homematic ("classic") devices only, no Homematic IP support
+  #   image: dersimn/simplehmrfd2mqtt
   #   ports:
   #     - "2126:2126"
   #   environment:
