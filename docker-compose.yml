@@ -7,13 +7,15 @@ services:
   mqtt:
     image: eclipse-mosquitto
     ports:
-      - "1883:1883"
+      - 1883:1883
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
   admin:
     image: dersimn/mqtt-admin
+    depends_on:
+      - mqtt
     ports:
-      - "8001:80"
+      - 8001:80
     environment:
       - MQTT_HOST=mqtt:9001
   # -------------------------------------------------------------------------------------
@@ -21,8 +23,10 @@ services:
   # -------------------------------------------------------------------------------------
   webui:
     image: dersimn/mqtt-smarthome-webui
+    depends_on:
+      - mqtt
     ports:
-      - "8000:80"
+      - 8000:80
     environment:
       - MQTT_HOST=mqtt:9001
     # volumes:
@@ -32,6 +36,8 @@ services:
   # -------------------------------------------------------------------------------------
   logic:
     image: dersimn/mqtt-scripts
+    depends_on:
+      - mqtt
     restart: always
     environment:
       - TZ=Europe/Berlin
@@ -41,6 +47,8 @@ services:
       - ./scripts:/scripts:ro # Remove simulation_*.js scripts inside this folder when testing with real hardware
   astro:
     image: dersimn/astro4mqtt
+    depends_on:
+      - mqtt
     restart: always
     environment:
       ASTRO4MQTT_MQTT_URL: mqtt://mqtt
@@ -61,13 +69,18 @@ services:
       - INFLUXDB_DB=mqtt
   mqtt2influx:
     image: dersimn/mqtt2influx
+    depends_on:
+      - mqtt
+      - influxdb
     environment:
       - MQTT2INFLUX_MQTT_URL=mqtt://mqtt
       - MQTT2INFLUX_INFLUX_HOST=influxdb
   grafana:
     image: grafana/grafana
+    depends_on:
+      - influxdb
     ports:
-      - "8002:3000"
+      - 8002:3000
     environment:
       - GF_SERVER_ROOT_URL=http://localhost:8002
       - GF_USERS_ALLOW_SIGN_UP=false
@@ -80,6 +93,8 @@ services:
   # -------------------------------------------------------------------------------------
   # hue:
   #   image: dersimn/simplehue2mqtt
+  #   depends_on:
+  #     - mqtt
   #   environment:
   #     - SIMPLEHUE2MQTT_MQTT_URL=mqtt://mqtt
   #     - SIMPLEHUE2MQTT_BRIDGE_ADDRESS=10.1.1.52
@@ -91,14 +106,18 @@ services:
   # -------------------------------------------------------------------------------------
   # chromecast:
   #   image: dersimn/chromecast-mqtt-smarthome-connector
-  #   network_mode: "host"
+  #   depends_on:
+  #     - mqtt
+  #   network_mode: host
   #   environment:
   #     - MQTT_HOST=mqtt
   # ------------------------------------------------------------------------------------- 
   # hm: # For Homematic ("classic") devices only, no Homematic IP support
   #   image: dersimn/simplehmrfd2mqtt
+  #   depends_on:
+  #     - mqtt
   #   ports:
-  #     - "2126:2126"
+  #     - 2126:2126
   #   environment:
   #     - SIMPLEHMRFD2MQTT_CCU_ADDRESS=10.1.1.112
   #     - SIMPLEHMRFD2MQTT_INIT_ADDRESS=10.1.1.50
@@ -107,8 +126,10 @@ services:
   # -------------------------------------------------------------------------------------
   # hmip: # For Homematic IP, still kinda alpha-stage level
   #   image: dersimn/simplehmip2mqtt
+  #   depends_on:
+  #     - mqtt
   #   ports:
-  #     - "3126:3126"
+  #     - 3126:3126
   #   environment:
   #     - SIMPLEHMIP2MQTT_CCU_ADDRESS=10.1.1.112
   #     - SIMPLEHMIP2MQTT_INIT_ADDRESS=10.1.1.50
@@ -117,12 +138,16 @@ services:
   # -------------------------------------------------------------------------------------
   # hs100:
   #   image: dersimn/hs100tomqtt
-  #   network_mode: "host"
+  #   depends_on:
+  #     - mqtt
+  #   network_mode: host
   #   environment:
   #     - HS100TOMQTT_MQTT_URL=mqtt://mqtt
   # -------------------------------------------------------------------------------------
   # homepilot:
   #   image: dersimn/homepilot2mqtt
+  #   depends_on:
+  #     - mqtt
   #   environment:
   #     - HOMEPILOT2MQTT_MQTT_URL=mqtt://mqtt
   #     - HOMEPILOT2MQTT_BRIDGE_ADDRESS=10.0.0.22
